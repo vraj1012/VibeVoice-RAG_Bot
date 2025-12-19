@@ -174,8 +174,8 @@ You can control the entire system using **`config.py`**.
 ```python
 # config.py
 
-# Set to "local" for Llama 3 (Offline)
-# Set to "cloud" for Gemini Flash (Fastest)
+# Set to "local" for Llama 3
+# Set to "cloud" for Gemini Flash 
 AI_MODE = "local" 
 
 ```
