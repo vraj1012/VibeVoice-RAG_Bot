@@ -145,9 +145,6 @@ Avocado_AI_Bot/
 
 ```
 
-```
-
-```
 
 ## 🐛 Troubleshooting
 
