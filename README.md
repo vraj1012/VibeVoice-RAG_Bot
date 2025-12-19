@@ -12,6 +12,78 @@ Maya is a next-generation voice AI assistant powered by the **Vibe Voice** TTS e
 * **⚡ Smart Interruptions (Barge-In):** The bot listens while speaking. If you interrupt, it stops instantly and handles the new context gracefully.
 * **⏱️ Smart Resume:** If cut off mid-sentence, the bot calculates exactly what was spoken and can resume the thought naturally.
 
+## Flow of the system
+```mermaid
+graph TD
+    %% Styling
+    classDef input fill:#f9f,stroke:#333,stroke-width:2px,color:black;
+    classDef logic fill:#bbf,stroke:#333,stroke-width:2px,color:black;
+    classDef memory fill:#bfb,stroke:#333,stroke-width:2px,color:black;
+    classDef output fill:#fbb,stroke:#333,stroke-width:2px,color:black;
+    classDef cloud fill:#eef,stroke:#333,stroke-dasharray: 5 5,color:black;
+
+    %% Nodes
+    User((User))
+    Mic[Microphone]:::input
+    Speaker[Speaker]:::output
+    
+    subgraph "👂 Input Processing"
+        Whisper[Faster Whisper STT]:::input
+        VAD[Voice Activity Detection]:::input
+    end
+
+    subgraph "🧠 Core Logic"
+        Orchestrator{Main Loop}:::logic
+        Interrupt[⚡ Interruption Handler]:::logic
+        SmartResume[⏱️ Smart Resume Logic]:::logic
+        Switch{Config Switch}:::logic
+    end
+
+    subgraph "📚 Memory & Context"
+        Chroma[(ChromaDB RAG)]:::memory
+        History[Conversation History]:::memory
+    end
+
+    subgraph "🤖 Model Selection"
+        Llama[Local: Llama 3 8B]:::logic
+        Gemini[Cloud: Gemini 2.5 Flash]:::cloud
+    end
+
+    subgraph "🔊 Output Processing"
+        TTS[Vibe Voice Server]:::output
+        Stream[Audio Stream Buffer]:::output
+    end
+
+    %% Flow
+    User -- "Voice Input" --> Mic
+    Mic --> VAD --> Whisper
+    Whisper -- "Transcribed Text" --> Orchestrator
+
+    %% Interruption Path
+    Whisper -.-> Interrupt
+    Interrupt -. "Stop Signal" .-> TTS
+    Interrupt -- "Calc. Unspoken Words" --> SmartResume
+    SmartResume --> Orchestrator
+
+    %% Brain Path
+    Orchestrator -- "Query" --> Chroma
+    Chroma -- "Context" --> Orchestrator
+    Orchestrator -- "Select Model" --> Switch
+    
+    %% The Exclusive Switch
+    Switch -- "If AI_MODE = Local" --> Llama
+    Switch -- "If AI_MODE = Cloud" --> Gemini
+    
+    Llama -->|Response| Orchestrator
+    Gemini -->|Response| Orchestrator
+
+    %% Output Path
+    Orchestrator -- "Text Response" --> TTS
+    TTS -- "WebSocket Stream" --> Stream
+    Stream -- "Audio Waves" --> Speaker
+    Speaker -- "Voice Output" --> User
+```
+
 ## 🛠️ Tech Stack & Environment
 
 * **Environment:** Conda (`vvoice`)
