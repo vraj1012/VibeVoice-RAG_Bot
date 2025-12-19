@@ -1,0 +1,8 @@
+# .gitignore
+__pycache__/
+*.pyc
+.env
+VibeVoice/       # External library
+*.wav            # Recordings
+transcript_*.txt # Logs
+.vscode/
